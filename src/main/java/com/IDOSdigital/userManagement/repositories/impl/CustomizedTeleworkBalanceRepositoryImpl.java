@@ -1,0 +1,6 @@
+package com.IDOSdigital.userManagement.repositories.impl;
+
+import com.IDOSdigital.userManagement.repositories.customised.CustomizedTeleworkBalanceRepository;
+
+public class CustomizedTeleworkBalanceRepositoryImpl implements CustomizedTeleworkBalanceRepository {
+}

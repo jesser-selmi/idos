@@ -1,0 +1,176 @@
+enum IdentityRole {
+    ADMIN
+    RH
+    USER
+    INTERN
+}
+
+enum RequestType {
+    TELEWORK_REQUEST
+    LEAVE_REQUEST
+}
+
+type User {
+    id: ID
+    firstName: String
+    lastName: String
+    email: String
+    password: String
+    teleworkBalance: Int
+    leaveBalance: Int
+    profileDescription: String
+    role: IdentityRole
+}
+
+input UserInput {
+    firstName: String
+    lastName: String
+    email: String
+    password: String
+    teleworkBalance: Int
+    leaveBalance: Int
+    profileDescription: String
+    role: IdentityRole
+}
+
+type Request {
+    id: ID
+    type: RequestType
+    userId: ID
+}
+
+input RequestInput {
+    type: RequestType
+    userId: ID
+}
+
+type Balance {
+    id: ID
+    userId: ID
+}
+
+input BalanceInput {
+    userId: ID
+}
+
+type TeleworkBalance {
+    id: ID
+    userId: ID
+    balance: Int
+}
+
+input TeleworkBalanceInput {
+    userId: ID
+    balance: Int
+}
+
+type LeaveBalance {
+    id: ID
+    userId: ID
+    balance: Int
+}
+
+input LeaveBalanceInput {
+    userId: ID
+    balance: Int
+}
+
+type EntityResponse {
+    message: String
+    status: Int
+    errors: [FieldMessage]
+}
+
+type FieldMessage {
+    field: String
+    message: String
+}
+
+union ResponseData = User | Request | Balance | TeleworkBalance | LeaveBalance
+
+type Response {
+    data: ResponseData
+    entityResponse: EntityResponse
+}
+
+type UserResponse {
+    data: User
+    entityResponse: EntityResponse
+}
+
+type RequestResponse {
+    data: Request
+    entityResponse: EntityResponse
+}
+
+type BalanceResponse {
+    data: Balance
+    entityResponse: EntityResponse
+}
+
+type TeleworkBalanceResponse {
+    data: TeleworkBalance
+    entityResponse: EntityResponse
+}
+
+type LeaveBalanceResponse {
+    data: LeaveBalance
+    entityResponse: EntityResponse
+}
+
+type UserResponseList {
+    data: [User]
+    entityResponse: EntityResponse
+}
+
+type RequestResponseList {
+    data: [Request]
+    entityResponse: EntityResponse
+}
+
+type BalanceResponseList {
+    data: [Balance]
+    entityResponse: EntityResponse
+}
+
+type TeleworkBalanceResponseList {
+    data: [TeleworkBalance]
+    entityResponse: EntityResponse
+}
+
+type LeaveBalanceResponseList {
+    data: [LeaveBalance]
+    entityResponse: EntityResponse
+}
+
+type Query {
+    getAllUsers: UserResponseList
+    getUserById(id: ID!): UserResponse
+    getAllRequests: RequestResponseList
+    getRequestById(id: ID!): RequestResponse
+    getAllBalances: BalanceResponseList
+    getBalanceById(id: ID!): BalanceResponse
+    getAllTeleworkBalances: TeleworkBalanceResponseList
+    getTeleworkBalanceById(id: ID!): TeleworkBalanceResponse
+    getAllLeaveBalances: LeaveBalanceResponseList
+    getLeaveBalanceById(id: ID!): LeaveBalanceResponse
+}
+
+type Mutation {
+    createUser(user: UserInput!): UserResponse
+    updateUser(user: UserInput! , id: ID!): UserResponse
+    deleteUser(id: ID!): UserResponse
+    createRequest(request: RequestInput!): RequestResponse
+    updateRequest(request: RequestInput! , id: ID! ): RequestResponse
+    deleteRequest(id: ID!): RequestResponse
+    createBalance(balance: BalanceInput!): BalanceResponse
+    updateBalance(balance: BalanceInput! , id: ID!): BalanceResponse
+    deleteBalance(id: ID!): BalanceResponse
+    createTeleworkBalance(teleworkBalance: TeleworkBalanceInput!): TeleworkBalanceResponse
+    updateTeleworkBalance(teleworkBalanceInput: TeleworkBalanceInput! , id: ID!): TeleworkBalanceResponse
+    deleteTeleworkBalance(id: ID!): TeleworkBalanceResponse
+    createLeaveBalance(leaveBalance: LeaveBalanceInput!): LeaveBalanceResponse
+    updateLeaveBalance(leaveBalanceInput: LeaveBalanceInput! , id: ID!): LeaveBalanceResponse
+    deleteLeaveBalance(id: ID!): LeaveBalanceResponse
+    login(email: String, password: String ): String
+}
