@@ -24,77 +24,14 @@ public class User extends AbstractAuditableEntity implements UserDetails {
     private String profileDescription;
     private IdentityRole role;
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public int getTeleworkBalance() {
-        return teleworkBalance;
-    }
-
-    public void setTeleworkBalance(int teleworkBalance) {
-        this.teleworkBalance = teleworkBalance;
-    }
-
-    public int getLeaveBalance() {
-        return leaveBalance;
-    }
-
-    public void setLeaveBalance(int leaveBalance) {
-        this.leaveBalance = leaveBalance;
-    }
-
-    public String getProfileDescription() {
-        return profileDescription;
-    }
-
-    public void setProfileDescription(String profileDescription) {
-        this.profileDescription = profileDescription;
-    }
-
-    public IdentityRole getRole() {
-        return role;
-    }
-
-    public void setRole(IdentityRole role) {
-        this.role = role;
-    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
     @Override
     public String getUsername() {
-        return email;
+        return this.email;
     }
 
     @Override
@@ -116,6 +53,4 @@ public class User extends AbstractAuditableEntity implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
 }
-

@@ -36,12 +36,10 @@ input UserInput {
 type Request {
     id: ID
     type: RequestType
-    userId: ID
 }
 
 input RequestInput {
     type: RequestType
-    userId: ID
 }
 
 type Balance {

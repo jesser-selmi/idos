@@ -2,18 +2,14 @@ package com.IDOSdigital.userManagement.security.token;
 
 import com.IDOSdigital.userManagement.entities.User;
 import com.IDOSdigital.userManagement.repositories.UserRepository;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jwt.JWTParser;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.List.of;
-
 @Component
-@Transactional
 public class TokenProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(TokenProcessor.class);
@@ -41,58 +34,46 @@ public class TokenProcessor {
     @Autowired
     private UserRepository userRepository;
 
-    private static final String EMAIL = "email";
+    private static final String EMAIL = "sub";
 
-    public Authentication authenticate(HttpServletRequest request) throws Exception {
-        String idToken = request.getHeader(this.jwtConfiguration.getHttpHeader());
-        if (idToken != null) {
-            HttpSession session = request.getSession();
-            session.setAttribute("idToken", idToken);
-            JWTClaimsSet claims = this.getClaimsFromToken(this.getBearerToken(idToken));
-            if (claims != null) {
-                validateIssuer(claims);
-                if (claims.getClaims().get(EMAIL) != null) {
-                    final String email = claims.getClaims().get(EMAIL).toString();
+    public Authentication authenticate(HttpServletRequest request) {
+        String token = request.getHeader(jwtConfiguration.getHttpHeader());
+        System.out.println("token" + token);
+        if (token != null && token.startsWith("Bearer ")) {
+            String bearerToken = token.substring(7);
+            try {
+                JWTClaimsSet claims = getClaimsFromToken(bearerToken);
+                if (claims != null) {
+                    //validateIssuer(claims);
+                    String email = claims.getStringClaim(EMAIL);
                     User user = userRepository.findUserByEmail(email).orElse(null);
                     if (user != null) {
-                        session.setAttribute("userId", claims.getClaims().get("sub"));
-                        final String role = "ROLE_".concat(user.getRole().name());
-                        final List<GrantedAuthority> grantedAuthorities = of(new SimpleGrantedAuthority(role));
-                        final UserDetails userDetails = new org.springframework.security.core.userdetails.User(email, "", grantedAuthorities);
-                        return new JwtAuthentication(userDetails, claims, grantedAuthorities);
+                        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+                        UserDetails userDetails = new org.springframework.security.core.userdetails.User(email, "", authorities);
+                        return new JwtAuthentication(userDetails, claims, authorities);
                     }
                 }
+            } catch (Exception e) {
+                logger.error("Token processing error", e);
             }
         }
         return null;
     }
 
-    private JWTClaimsSet getClaimsFromToken(String bearerToken) {
+    private JWTClaimsSet getClaimsFromToken(String token) {
         try {
-            JWT jwt = JWTParser.parse(bearerToken);
-            return jwt.getJWTClaimsSet();
-        } catch (final Exception e) {
-            logger.error("Error : ", e);
+            return JWTParser.parse(token).getJWTClaimsSet();
+        } catch (Exception e) {
+            logger.error("Error parsing JWT token", e);
             return null;
         }
     }
 
-    private String getBearerToken(String token) {
-        return token.startsWith("Bearer ") ? token.substring("Bearer ".length()) : token;
-    }
-
     private void validateIssuer(JWTClaimsSet claims) throws IssuerMismatchException {
-        Base64 base64 = new Base64();
-        final String decodedIssuer = new String(base64.decode(claims.getIssuer().getBytes()));
-
-        if (!decodedIssuer.equals(this.jwtConfiguration.getJwtSecret())) {
-            throw new IssuerMismatchException(String.format("Issuer %s does not match deeply idp %s", claims.getIssuer(), this.jwtConfiguration.getJwtSecret()));
-        }
-    }
-
-    public class IssuerMismatchException extends Exception {
-        public IssuerMismatchException(String message) {
-            super(message);
+        String expectedIssuer = jwtConfiguration.getJwtSecret();
+        String actualIssuer = claims.getIssuer();
+        if (!expectedIssuer.equals(actualIssuer)) {
+            throw new IssuerMismatchException(String.format("Issuer %s does not match expected %s", actualIssuer, expectedIssuer));
         }
     }
 
@@ -106,7 +87,7 @@ public class TokenProcessor {
 
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                     .subject(userDetails.getUsername())
-                    .issuer("Nzg3ZjA1ZjUtNzEyMy00ZmEzLWFjMjAtYWU2ZGVkZjJhOWZi")
+                    .issuer(jwtConfiguration.getJwtIssuer()) // Ensure this is properly configured
                     .expirationTime(expiryDate)
                     .claim("roles", userDetails.getAuthorities())
                     .build();
@@ -119,7 +100,13 @@ public class TokenProcessor {
             return "Bearer " + signedJWT.serialize();
         } catch (Exception e) {
             logger.error("Token generation error", e);
-            throw new RuntimeException("Token generation failed");
+            throw new RuntimeException("Token generation failed", e);
+        }
+    }
+
+    public static class IssuerMismatchException extends Exception {
+        public IssuerMismatchException(String message) {
+            super(message);
         }
     }
 }

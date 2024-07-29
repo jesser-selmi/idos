@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtConfiguration {
 
-    @Value("${jwt.httpHeader:Authorization}")
+    @Value("${jwt.httpHeader}")
     private String httpHeader;
 
     @Value("${jwt.secret}")
@@ -14,6 +14,9 @@ public class JwtConfiguration {
 
     @Value("${jwt.expiration}")
     private long expirationTime;
+
+    @Value("${jwt.issuer:your_default_issuer}")
+    private String jwtIssuer;
 
     public String getHttpHeader() {
         return httpHeader;
@@ -37,5 +40,13 @@ public class JwtConfiguration {
 
     public void setExpirationTime(long expirationTime) {
         this.expirationTime = expirationTime;
+    }
+
+    public String getJwtIssuer() {
+        return jwtIssuer;
+    }
+
+    public void setJwtIssuer(String jwtIssuer) {
+        this.jwtIssuer = jwtIssuer;
     }
 }
