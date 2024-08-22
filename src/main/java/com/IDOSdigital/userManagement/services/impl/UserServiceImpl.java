@@ -12,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +22,6 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
-
     @Override
     public Response getAllUsers() {
         List<User> allUsers = userRepository.findAll();
@@ -40,7 +38,6 @@ public class UserServiceImpl implements UserService {
         response.setData(users);
         return response;
     }
-
     @Override
     public Response getUserById(String id) {
         Response res = new Response();
@@ -62,7 +59,6 @@ public class UserServiceImpl implements UserService {
         res.setEntityResponse(response);
         return res;
     }
-
     @Override
     public Response createUser(User user) {
         Response res = new Response();
@@ -81,19 +77,15 @@ public class UserServiceImpl implements UserService {
         res.setEntityResponse(response);
         return res;
     }
-
     @Override
     public Response updateUser(User user, String id) {
         Response res = new Response();
         EntityResponse response;
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
-
         try {
             Optional<User> optionalUser = userRepository.findById(id);
-
             if (optionalUser.isPresent()) {
                 User existingUser = optionalUser.get();
-
                 // Update only the attributes from newUser that are not null
                 if (user.getFirstName() != null && !user.getFirstName().isEmpty()) {
                     existingUser.setFirstName(user.getFirstName());
@@ -105,7 +97,7 @@ public class UserServiceImpl implements UserService {
                     existingUser.setEmail(user.getEmail());
                 }
                 if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-                    existingUser.setPassword(user.getPassword());
+                    existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
                 }
                 if (user.getRole() != null ) {
                     existingUser.setRole(user.getRole());
@@ -133,17 +125,14 @@ public class UserServiceImpl implements UserService {
             errors.add(new ErrorResponse.ValidationError("exception", e.getMessage()));
             response.setErrors(errors);
         }
-
         res.setEntityResponse(response);
         return res;
     }
-
     @Override
     public Response deleteUser(String id) {
         Response res = new Response();
         EntityResponse response;
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
-
         try {
             Optional<User> optionalUser = userRepository.findById(id);
             if (optionalUser.isPresent()) {
@@ -160,15 +149,12 @@ public class UserServiceImpl implements UserService {
             errors.add(new ErrorResponse.ValidationError("exception", e.getMessage()));
             response.setErrors(errors);
         }
-
         res.setEntityResponse(response);
         return res;
     }
-
     public Optional<User> findUserByEmail(String email) {
         return userRepository.findUserByEmail(email);
     }
-
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = findUserByEmail(email)

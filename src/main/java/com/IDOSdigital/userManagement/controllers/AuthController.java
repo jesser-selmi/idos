@@ -1,6 +1,8 @@
 package com.IDOSdigital.userManagement.controllers;
 
 import com.IDOSdigital.userManagement.security.token.TokenProcessor;
+import com.IDOSdigital.userManagement.utils.EntityResponse;
+import com.IDOSdigital.userManagement.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -11,24 +13,37 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Controller;
 
 @Controller
-public class    AuthController {
+public class AuthController {
+
+    private final AuthenticationManager authenticationManager;
+    private final TokenProcessor tokenProcessor;
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    public AuthController(AuthenticationManager authenticationManager, TokenProcessor tokenProcessor) {
+        this.authenticationManager = authenticationManager;
+        this.tokenProcessor = tokenProcessor;
+    }
 
-    @Autowired
-    private TokenProcessor tokenProcessor;
 
     @MutationMapping
-    public String login(@Argument String email, @Argument String password) {
+    public Response login(@Argument String email, @Argument String password) {
+        Response response = new Response();
+        EntityResponse entityResponse = new EntityResponse();
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
             String token = tokenProcessor.generateToken(authentication);
-            return token;
+            response.setData(token);
+            entityResponse.setStatus(200);
+            entityResponse.setMessage("Authentication Successful");
+            response.setEntityResponse(entityResponse);
+            return response;
         } catch (AuthenticationException e) {
-            return "Invalid email or password";
+            entityResponse.setStatus(403);
+            entityResponse.setMessage("Authentication Failed");
+            response.setEntityResponse(entityResponse);
+            return response;
         }
     }
 }

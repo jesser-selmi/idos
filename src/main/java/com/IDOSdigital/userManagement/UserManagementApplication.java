@@ -8,10 +8,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @EnableMongoRepositories
 @ComponentScan({"com.IDOSdigital.userManagement.*"})
 public class UserManagementApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(UserManagementApplication.class, args);
 	}
-
-
 }

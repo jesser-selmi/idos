@@ -2,7 +2,6 @@ package com.IDOSdigital.userManagement.entities;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 
 @Getter

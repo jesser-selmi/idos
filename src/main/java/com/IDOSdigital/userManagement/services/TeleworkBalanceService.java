@@ -5,8 +5,6 @@ import com.IDOSdigital.userManagement.utils.Response;
 
 public interface TeleworkBalanceService {
     Response getAllTeleworkBalances();
-
-
     Response getTeleworkBalanceById(String id);
     Response createTeleworkBalance(TeleworkBalance teleworkBalance);
     Response updateTeleworkBalance(TeleworkBalance teleworkBalance , String id);

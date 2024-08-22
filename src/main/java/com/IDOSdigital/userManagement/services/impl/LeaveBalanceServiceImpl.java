@@ -9,17 +9,14 @@ import com.IDOSdigital.userManagement.utils.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class LeaveBalanceServiceImpl implements LeaveBalanceService {
-
     @Autowired
     private LeaveBalanceRepository leaveBalanceRepository;
-
     @Override
     public Response getAllLeaveBalances() {
         List<LeaveBalance> allLeaveBalances = leaveBalanceRepository.findAll();
@@ -36,14 +33,11 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
         response.setData(leaveBalances);
         return response;
     }
-
-
     @Override
     public Response getLeaveBalanceById(String id) {
         Response response = new Response();
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
         EntityResponse entityResponse;
-
         try {
             Optional<LeaveBalance> optionalLeaveBalance = leaveBalanceRepository.findById(id);
             if (optionalLeaveBalance.isPresent()) {
@@ -55,17 +49,14 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
         } catch (Exception e) {
             entityResponse = buildResponseValidator("Error retrieving leave balance", HttpStatus.INTERNAL_SERVER_ERROR, errors);
         }
-
         response.setEntityResponse(entityResponse);
         return response;
     }
-
     @Override
     public Response createLeaveBalance(LeaveBalance leaveBalance) {
         Response response = new Response();
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
         EntityResponse entityResponse;
-
         try {
             LeaveBalance createdLeaveBalance = leaveBalanceRepository.save(leaveBalance);
             response.setData(createdLeaveBalance);
@@ -73,34 +64,26 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
         } catch (Exception e) {
             entityResponse = buildResponseValidator("Error creating leave balance", HttpStatus.INTERNAL_SERVER_ERROR, errors);
         }
-
         response.setEntityResponse(entityResponse);
         return response;
     }
-
     @Override
     public Response updateLeaveBalance(LeaveBalance leaveBalance, String id) {
         Response response = new Response();
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
         EntityResponse entityResponse;
-
         try {
             Optional<LeaveBalance> optionalLeaveBalance = leaveBalanceRepository.findById(id);
             if (optionalLeaveBalance.isPresent()) {
                 LeaveBalance existingLeaveBalance = optionalLeaveBalance.get();
-
                 // Update only the attributes from leaveBalance that are not null or not empty
                 if (leaveBalance.getBalance() != 0) {
                     existingLeaveBalance.setBalance(leaveBalance.getBalance());
                 }
-
                 if (leaveBalance.getUserId() != null && !leaveBalance.getUserId().isEmpty()) {
                     existingLeaveBalance.setUserId(leaveBalance.getUserId());
                 }
-
-                // Save the updated leave balance
                 LeaveBalance updatedLeaveBalance = leaveBalanceRepository.save(existingLeaveBalance);
-
                 response.setData(updatedLeaveBalance);
                 entityResponse = buildResponseValidator("Leave balance updated successfully", HttpStatus.OK, errors);
             } else {
@@ -110,18 +93,14 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
             errors.add(new ErrorResponse.ValidationError("Exception", e.getMessage()));
             entityResponse = buildResponseValidator("Error updating leave balance", HttpStatus.INTERNAL_SERVER_ERROR, errors);
         }
-
         response.setEntityResponse(entityResponse);
         return response;
     }
-
-
     @Override
     public Response deleteLeaveBalance(String id) {
         Response response = new Response();
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
         EntityResponse entityResponse;
-
         try {
             Optional<LeaveBalance> optionalLeaveBalance = leaveBalanceRepository.findById(id);
             if (optionalLeaveBalance.isPresent()) {
@@ -138,12 +117,9 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
             errors.add(new ErrorResponse.ValidationError("exception", e.getMessage()));
             entityResponse.setErrors(errors);
         }
-
         response.setEntityResponse(entityResponse);
         return response;
     }
-
-
     private EntityResponse buildResponseValidator(String message, HttpStatus status, List<ErrorResponse.ValidationError> errors) {
         EntityResponse entityResponse = new EntityResponse();
         entityResponse.setMessage(message);

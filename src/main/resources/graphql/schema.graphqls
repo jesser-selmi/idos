@@ -1,3 +1,5 @@
+scalar Date
+
 enum IdentityRole {
     ADMIN
     RH
@@ -8,6 +10,14 @@ enum IdentityRole {
 enum RequestType {
     TELEWORK_REQUEST
     LEAVE_REQUEST
+}
+
+enum RequestStatus {
+    PENDING,
+    ACCEPTED,
+    ADMIN_ACCEPTED,
+    RH_ACCEPTED,
+    REJECTED
 }
 
 type User {
@@ -36,12 +46,17 @@ input UserInput {
 type Request {
     id: ID
     type: RequestType
-    userId: ID
+    userId: String
+    status: RequestStatus
+    date : Date!
+    duration : Int
 }
 
 input RequestInput {
     type: RequestType
-    userId: ID
+    date : String
+    status : RequestStatus
+    duration : Int
 }
 
 type Balance {
@@ -92,7 +107,10 @@ type Response {
     data: ResponseData
     entityResponse: EntityResponse
 }
-
+type LoginResponse {
+    data: String
+    entityResponse: EntityResponse
+}
 type UserResponse {
     data: User
     entityResponse: EntityResponse
@@ -147,6 +165,7 @@ type Query {
     getAllUsers: UserResponseList
     getUserById(id: ID!): UserResponse
     getAllRequests: RequestResponseList
+    getAllUserRequests: RequestResponseList
     getRequestById(id: ID!): RequestResponse
     getAllBalances: BalanceResponseList
     getBalanceById(id: ID!): BalanceResponse
@@ -172,5 +191,5 @@ type Mutation {
     createLeaveBalance(leaveBalance: LeaveBalanceInput!): LeaveBalanceResponse
     updateLeaveBalance(leaveBalanceInput: LeaveBalanceInput! , id: ID!): LeaveBalanceResponse
     deleteLeaveBalance(id: ID!): LeaveBalanceResponse
-    login(email: String, password: String ): String
+    login(email: String, password: String ): LoginResponse
 }

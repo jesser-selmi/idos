@@ -9,22 +9,18 @@ import com.IDOSdigital.userManagement.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class TeleworkBalanceServiceImpl implements TeleworkBalanceService {
-
     @Autowired
     private TeleworkBalanceRepository teleworkBalanceRepository;
-
     @Override
     public Response getAllTeleworkBalances() {
         List<TeleworkBalance> allTeleworkBalances = teleworkBalanceRepository.findAll();
         List<TeleworkBalance> teleworkBalances = new ArrayList<>();
-
         for (TeleworkBalance twb : allTeleworkBalances) {
             if (!twb.isDeleted()) {
                 teleworkBalances.add(twb);
@@ -36,8 +32,6 @@ public class TeleworkBalanceServiceImpl implements TeleworkBalanceService {
         response.setData(teleworkBalances);
         return response;
     }
-
-
     @Override
     public Response getTeleworkBalanceById(String id) {
         Response res = new Response();
@@ -59,7 +53,6 @@ public class TeleworkBalanceServiceImpl implements TeleworkBalanceService {
         res.setEntityResponse(response);
         return res;
     }
-
     @Override
     public Response createTeleworkBalance(TeleworkBalance teleworkBalance) {
         Response res = new Response();
@@ -77,18 +70,15 @@ public class TeleworkBalanceServiceImpl implements TeleworkBalanceService {
         res.setEntityResponse(response);
         return res;
     }
-
     @Override
     public Response updateTeleworkBalance(TeleworkBalance teleworkBalance, String id) {
         Response res = new Response();
         EntityResponse response;
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
-
         try {
             Optional<TeleworkBalance> optionalTeleworkBalance = teleworkBalanceRepository.findById(id);
             if (optionalTeleworkBalance.isPresent()) {
                 TeleworkBalance existingTeleworkBalance = optionalTeleworkBalance.get();
-
                 // Update only the attributes from teleworkBalance that are not null
                 if (teleworkBalance.getBalance() != 0) {
                     existingTeleworkBalance.setBalance(teleworkBalance.getBalance());
@@ -96,10 +86,7 @@ public class TeleworkBalanceServiceImpl implements TeleworkBalanceService {
                 if (teleworkBalance.getUserId() != null && !teleworkBalance.getUserId().isEmpty()) {
                     existingTeleworkBalance.setUserId(teleworkBalance.getUserId());
                 }
-
-                // Save the updated telework balance
                 TeleworkBalance updatedTeleworkBalance = teleworkBalanceRepository.save(existingTeleworkBalance);
-
                 res.setData(updatedTeleworkBalance);
                 response = new EntityResponse(HttpStatus.OK.value(), "Telework balance updated successfully");
             } else {
@@ -114,13 +101,11 @@ public class TeleworkBalanceServiceImpl implements TeleworkBalanceService {
         res.setEntityResponse(response);
         return res;
     }
-
     @Override
     public Response deleteTeleworkBalance(String id) {
         Response res = new Response();
         EntityResponse response;
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
-
         try {
             Optional<TeleworkBalance> optionalTeleworkBalance = teleworkBalanceRepository.findById(id);
             if (optionalTeleworkBalance.isPresent()) {
@@ -137,7 +122,6 @@ public class TeleworkBalanceServiceImpl implements TeleworkBalanceService {
             errors.add(new ErrorResponse.ValidationError("exception", e.getMessage()));
             response.setErrors(errors);
         }
-
         res.setEntityResponse(response);
         return res;
     }

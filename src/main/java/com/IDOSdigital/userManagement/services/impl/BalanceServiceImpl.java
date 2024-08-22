@@ -9,22 +9,18 @@ import com.IDOSdigital.userManagement.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class BalanceServiceImpl implements BalanceService {
-
     @Autowired
     private BalanceRepository balanceRepository;
-
     @Override
     public Response getAllBalances() {
         List<Balance> allBalances = balanceRepository.findAll();
         List<Balance> balances = new ArrayList<>();
-
         for (Balance b : allBalances) {
             if (!b.isDeleted()) {
                 balances.add(b);
@@ -36,8 +32,6 @@ public class BalanceServiceImpl implements BalanceService {
         response.setData(balances);
         return response;
     }
-
-
     @Override
     public Response getBalanceById(String id) {
         Response response = new Response();
@@ -52,7 +46,6 @@ public class BalanceServiceImpl implements BalanceService {
         }
         return response;
     }
-
     @Override
     public Response createBalance(Balance balance) {
         Balance createdBalance = balanceRepository.save(balance);
@@ -62,13 +55,11 @@ public class BalanceServiceImpl implements BalanceService {
         response.setData(createdBalance);
         return response;
     }
-
     @Override
     public Response updateBalance(Balance balance, String id) {
         Response res = new Response();
         EntityResponse entityResponse;
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
-
         try {
             Optional<Balance> optionalBalance = balanceRepository.findById(id);
             if (optionalBalance.isPresent()) {
@@ -78,10 +69,7 @@ public class BalanceServiceImpl implements BalanceService {
                 if (balance.getUserId() != null && !balance.getUserId().isEmpty()) {
                     existingBalance.setUserId(balance.getUserId());
                 }
-
-                // Save the updated balance
                 Balance updatedBalance = balanceRepository.save(existingBalance);
-
                 res.setData(updatedBalance);
                 entityResponse = new EntityResponse(HttpStatus.OK.value(), "Balance updated successfully");
             } else {
@@ -92,17 +80,14 @@ public class BalanceServiceImpl implements BalanceService {
             entityResponse = new EntityResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
             entityResponse.setErrors(errors);
         }
-
         res.setEntityResponse(entityResponse);
         return res;
     }
-
     @Override
     public Response deleteBalance(String id) {
         Response response = new Response();
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
         EntityResponse entityResponse;
-
         try {
             Optional<Balance> optionalBalance = balanceRepository.findById(id);
             if (optionalBalance.isPresent()) {
@@ -119,11 +104,9 @@ public class BalanceServiceImpl implements BalanceService {
             errors.add(new ErrorResponse.ValidationError("exception", e.getMessage()));
             entityResponse.setErrors(errors);
         }
-
         response.setEntityResponse(entityResponse);
         return response;
     }
-
     private EntityResponse buildResponseValidator(String message, HttpStatus status, List<ErrorResponse.ValidationError> errors) {
         EntityResponse entityResponse = new EntityResponse();
         entityResponse.setMessage(message);

@@ -8,56 +8,74 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfiguration {
 
     private final TokenProcessor tokenProcessor;
 
+
     @Autowired
     public SecurityConfiguration(TokenProcessor tokenProcessor) {
         this.tokenProcessor = tokenProcessor;
-    }
 
+    }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Configure HTTP Security
         http
+                .csrf().disable() // Disable CSRF if you're using stateless authentication (e.g., JWT)
                 .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                .requestMatchers("/graphql/**").permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/login")).access(new WebExpressionAuthorizationManager("hasIpAddress('127.0.0.1')")));
-
-
-        http.addFilterBefore(new JwtAuthFilter(tokenProcessor), UsernamePasswordAuthenticationFilter.class)
-                .csrf().disable(); // Disable CSRF if you're using stateless authentication (e.g., JWT)
-
+                        {
+                            try {
+                                authorizeRequests
+                                        .requestMatchers("/graphql").permitAll() // Allow access to GraphQL endpoint
+                                        .anyRequest().authenticated() // Require authentication for other endpoints
+                                        .and()
+                                        .sessionManagement().disable()
+                                        .formLogin().disable();
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                )
+                .addFilterBefore(new JwtAuthFilter(tokenProcessor), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/graphql")
+                        .allowedOrigins("http://localhost:5173")  // Allow your frontend's origin
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
+            }
+        };
+    }
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
     @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    public AuthenticationManager authenticationManager(PasswordEncoder passwordEncoder, TodoUserDetailsService todoUserDetailsService) {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setUserDetailsService(todoUserDetailsService);
         authenticationProvider.setPasswordEncoder(passwordEncoder);
 
         return new ProviderManager(List.of(authenticationProvider));
